@@ -1,7 +1,5 @@
-import {State} from "./Compiler";
+import {Split, Match, State} from "./State";
 
-var Split = 256;
-var Match = 257;
 var listid = 0;
 class List
 {

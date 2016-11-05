@@ -1,28 +1,19 @@
-var Split = 256;
-var Match = 257;
-
-export class State
-{
-    public lastlist: number;
-
-    constructor(public c: number, public out: State[]){
-
-        if(out === null) this.out = [];
-    }
-}
+import {Split, Match, State} from "./State";
 
 class Frag
 {
     constructor(public start: State, public end: State[]){
     }
+
+    public patch(input: State)
+    {
+        this.end.forEach((outState) => {
+            outState.out.push(input);
+        });
+    }
 }
 
-function patch(outs: State[], input: State)
-{
-    outs.forEach((outState) => {
-        outState.out.push(input);
-    });
-}
+
 
 export function post2nfa(postfix: string) : State
 {
@@ -40,7 +31,7 @@ export function post2nfa(postfix: string) : State
             case ".":
                 e2 = stack.shift();
                 e1 = stack.shift();
-                patch(e1.end, e2.start);
+                e1.patch(e2.start);
                 stack.unshift(new Frag(e1.start, e2.end));
                 break;
             case "?":
@@ -51,13 +42,13 @@ export function post2nfa(postfix: string) : State
             case "*":
                 e = stack.shift();
                 state = new State(Split, [e.start]);
-                patch(e.end, state);
+                e.patch(state);
                 stack.unshift(new Frag(state, [state]));
                 break;
             case "+":
                 e = stack.shift();
                 state = new State(Split, [e.start]);
-                patch(e.end, state);
+                e.patch(state);
                 stack.unshift(new Frag(e.start, [state]));
                 break;
             default:
@@ -68,6 +59,6 @@ export function post2nfa(postfix: string) : State
       
     });
       let e = stack.shift();
-      patch(e.end, new State(Match, []));
+      e.patch(new State(Match, []))
       return e.start;
 }
