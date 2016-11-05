@@ -8,11 +8,11 @@
             "type": "node",
             "request": "launch",
             "name": "Debug Program",
+            "preLaunchTask": "build",
             "program": "${workspaceRoot}\\dist\\index.js",
             "cwd": "${workspaceRoot}",
             "outDir" : "${workspaceRoot}\\dist",
-            "sourceMaps": true,
-            "preLaunchTask": "build"
+            "sourceMaps": true
         },
         {
             "type": "node",

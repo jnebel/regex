@@ -21,7 +21,7 @@
         },
         {
             "taskName": "build",
-            "args": ["build"]
+            "args": ["run", "build"]
         }
     ]
 }
