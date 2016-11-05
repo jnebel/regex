@@ -5,7 +5,10 @@ class State
 {
     public lastlist: number;
 
-    constructor(public c: number, public out: State, public out1: State){}
+    constructor(public c: number, public out: State[]){
+
+        if(out === null) this.out = [];
+    }
 }
 
 class Frag
@@ -16,7 +19,7 @@ class Frag
 function patch(outs: State[], input: State)
 {
     outs.forEach((outState) => {
-        outState.out = input;
+        outState.out.push(input);
     });
 }
 
@@ -30,8 +33,9 @@ function post2nfa(postfix: string) : State
             case "|":
                 e2 = stack.shift();
                 e1 = stack.shift();
-                state = new State(Split, e1.start, e2.start);
+                state = new State(Split, [e1.start, e2.start]);
                 stack.unshift(new Frag(state, e1.out.concat(e2.out)));
+                break;
             case ".":
                 e2 = stack.shift();
                 e1 = stack.shift();
@@ -40,26 +44,34 @@ function post2nfa(postfix: string) : State
                 break;
             case "?":
                 e = stack.shift();
-                state = new State(Split, e.start, null);
-                stack.unshift(new Frag(state, e.out.concat(state.out1)));
+                state = new State(Split, [e.start]);
+                stack.unshift(new Frag(state, e.out.concat(state)));
+                break;
             case "*":
                 e = stack.shift();
-                state = new State(Split, e.start, null);
+                state = new State(Split, [e.start]);
                 patch(e.end, state);
-                stack.unshift(new Frag(state, [state.out1]));
+                stack.unshift(new Frag(state, [state]));
+                break;
             case "+":
                 e = stack.shift();
-                state = new State(Split, e.start, null);
+                state = new State(Split, [e.start]);
                 patch(e.end, state);
-                stack.unshift(new Frag(e.start, [state.out1]));
+                stack.unshift(new Frag(e.start, [state]));
+                break;
             default:
-                state = new State(character.charCodeAt(0),null,null);
+                state = new State(character.charCodeAt(0), []);
                 stack.unshift(new Frag(state, [state]));
                 break;
         }
       
     });
       let e = stack.shift();
-      patch(e.end, new State(Match, null, null));
+      patch(e.end, new State(Match, []));
       return e.start;
 }
+
+var tests = [
+    "abb.+.a."
+];
+var nfas = tests.map(post2nfa);
