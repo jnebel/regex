@@ -1,4 +1,4 @@
-import {Split, Match, State} from "./State";
+import {StateType, State} from "./State";
 
 var listid = 0;
 class List
@@ -13,7 +13,7 @@ class List
     public isMatch() : boolean
     {
         return this.s.some((state) => {
-            return state.c === Match;
+            return state.type === StateType.Final;
         });
     }
 
@@ -30,7 +30,7 @@ export function match(start: State, test: string): boolean
     
     test.split("").forEach((character) => {
 
-        step(cList, character.charCodeAt(0), nList);
+        step(cList, character, nList);
         let t = cList;
         cList = nList;
         nList = t;
@@ -47,7 +47,7 @@ function addstate(l: List, s: State)
         return;
     }
     s.lastlist = listid;
-    if(s.c === Split)
+    if(s.type === StateType.Split)
     {
         s.out.forEach((outState) => {
             addstate(l, outState);
@@ -65,13 +65,13 @@ function startlist(s: State, l: List)
     return l;
 }
 
-function step(clist: List, c: number, nlist: List)
+function step(clist: List, character :string, nlist: List)
 {
     listid++;
     nlist.clear();
     clist.s.forEach((state) => {
 
-        if(state.c === c)
+        if(state.type === StateType.Matcher && state.matcherFn(character))
         {
             state.out.forEach((outstate) => {
                 addstate(nlist, outstate);

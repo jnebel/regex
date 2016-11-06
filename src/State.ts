@@ -1,12 +1,35 @@
-var Split = 256;
-var Match = 257;
+export enum StateType
+{
+    Matcher,
+    Split,
+    Final,
+}
 
-export {Split, Match};
 export class State
 {
     public lastlist: number;
+    public matcherFn: (char: string) => boolean;
 
-    constructor(public c: number, public out: State[]){
-        if(out === null) this.out = [];
+    constructor(public type: StateType, public out: State[] = []){
+    }
+
+    public static CreateFinalState()
+    {
+        return new State(StateType.Final);
+    }
+
+    public static CreateSplitState(...out: State[])
+    {
+        return new State(StateType.Split, out);
+    }
+
+    public static CreateCharacterMatcherState(char: String)
+    {
+       let state = new State(StateType.Matcher);
+       state.matcherFn = function(testChar: string)
+       {
+           return char === testChar;
+       }
+       return state;
     }
 }
