@@ -1,6 +1,18 @@
 import {StateType, State} from "./State";
 
-var listid = 0;
+class IdGenerator
+{
+    private currentId = 0;
+    constructor(){}
+
+    public get(){
+        return this.currentId;
+    }
+    public increment(){
+        this.currentId++; 
+    }
+}
+
 class List
 {
     public s : State[];
@@ -25,12 +37,13 @@ class List
 
 export function match(start: State, test: string): boolean
 {
-    let cList = startlist(start, new List());
+    var id = new IdGenerator();
+    let cList = startlist(start, new List(), id);
     let nList = new List();
     
     test.split("").forEach((character) => {
 
-        step(cList, character, nList);
+        step(cList, character, nList, id);
         let t = cList;
         cList = nList;
         nList = t;
@@ -40,41 +53,41 @@ export function match(start: State, test: string): boolean
     return cList.isMatch();
 }
 
-function addstate(l: List, s: State)
+function addstate(l: List, s: State, id: IdGenerator)
 {
-    if(s === null || s.lastlist === listid)
+    if(s === null || s.lastlist === id.get())
     {
         return;
     }
-    s.lastlist = listid;
+    s.lastlist = id.get();
     if(s.type === StateType.Split)
     {
         s.out.forEach((outState) => {
-            addstate(l, outState);
+            addstate(l, outState, id);
         });
         return;
     }
     l.s.push(s);
 }
 
-function startlist(s: State, l: List)
+function startlist(s: State, l: List, id: IdGenerator)
 {
-    listid++;
+    id.increment();
     l.clear();
-    addstate(l, s);
+    addstate(l, s, id);
     return l;
 }
 
-function step(clist: List, character :string, nlist: List)
+function step(clist: List, character :string, nlist: List, id: IdGenerator)
 {
-    listid++;
+    id.increment();
     nlist.clear();
     clist.s.forEach((state) => {
 
         if(state.type === StateType.Matcher && state.matcherFn(character))
         {
             state.out.forEach((outstate) => {
-                addstate(nlist, outstate);
+                addstate(nlist, outstate, id);
             });
         }
 
