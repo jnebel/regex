@@ -1,6 +1,6 @@
 import { State } from "./State";
 
-class Frag {
+class StateGroup {
     constructor(public start: State, public end: State[]) {
     }
 
@@ -12,7 +12,7 @@ class Frag {
 }
 
 export function post2nfa(postfix: string): State {
-    var stack = [] as Frag[];
+    var stack = [] as StateGroup[];
     postfix.split("").forEach((character) => {
         switch (character) {
             case "|":
@@ -45,38 +45,38 @@ function createAlternationState(stack) {
     let e2 = stack.shift();
     let e1 = stack.shift();
     let state = State.CreateSplitState(e1.start, e2.start);
-    stack.unshift(new Frag(state, e1.end.concat(e2.end)));
+    stack.unshift(new StateGroup(state, e1.end.concat(e2.end)));
 }
 
 function createCatenationState(stack) {
     let e2 = stack.shift();
     let e1 = stack.shift();
     e1.patch(e2.start);
-    stack.unshift(new Frag(e1.start, e2.end));
+    stack.unshift(new StateGroup(e1.start, e2.end));
 }
 
 function createZeroOrOneState(stack) {
     let e = stack.shift();
     let state = State.CreateSplitState(e.start);
-    stack.unshift(new Frag(state, e.end.concat(state)));
+    stack.unshift(new StateGroup(state, e.end.concat(state)));
 }
 
 function createZeroOrMoreState(stack) {
     let e = stack.shift();
     let state = State.CreateSplitState(e.start);    
     e.patch(state);
-    stack.unshift(new Frag(state, [state]));
+    stack.unshift(new StateGroup(state, [state]));
 }
 
 function createOneOrMoreState(stack) {
     let e = stack.shift();
     let state = State.CreateSplitState(e.start);    
     e.patch(state);
-    stack.unshift(new Frag(e.start, [state]));
+    stack.unshift(new StateGroup(e.start, [state]));
 }
 
 function createCharacterMatchState(stack, character) {
     let state = State.CreateCharacterMatcherState(character);
-    stack.unshift(new Frag(state, [state]));
+    stack.unshift(new StateGroup(state, [state]));
 
 }
