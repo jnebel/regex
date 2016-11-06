@@ -30,12 +30,7 @@ class Executor
         });
     }
 
-    public clear() : void
-    {
-        this.s = [];
-    }
-
-    public addState(s: State, id: IdGenerator) : void
+    private addState(s: State, id: IdGenerator) : void
     {
         if(s === null || s.lastlist == id.get())
         {
@@ -53,7 +48,6 @@ class Executor
 
     public static Start(startState: State, id: IdGenerator) : Executor
     {
-        id.increment();
         var list = new Executor();
         list.addState(startState, id);
         return list;
