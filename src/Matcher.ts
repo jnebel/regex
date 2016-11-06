@@ -17,7 +17,6 @@ class Executor
 {
     private steps : State[][];
     private currentStep: number; 
-    private id: IdGenerator;
 
     public static Start(startState: State) : Executor
     {
@@ -30,7 +29,6 @@ class Executor
     {
      this.steps = [];
      this.currentStep = 0;
-     this.id = new IdGenerator();
     }
 
     public currentStepContainsFinal() : boolean
@@ -42,7 +40,6 @@ class Executor
 
     public generateNextStep(character: string) : void
     {
-        this.id.increment();
         this.steps[this.currentStep].forEach((state) => {
             if(state.type === StateType.Matcher && state.matcherFn(character))
             {
@@ -62,11 +59,11 @@ class Executor
 
     private addToStep(s: State, step: number) : void
     {
-        if(s === null || s.lastlist == this.id.get())
+        if(s === null || s.lastlist == step)
         {
             return;
         }
-        s.lastlist = this.id.get();
+        s.lastlist = step;
         if(s.type === StateType.Split)
         {
             s.out.forEach((outState) => {
