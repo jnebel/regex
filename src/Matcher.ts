@@ -39,15 +39,9 @@ export function match(start: State, test: string): boolean
 {
     var id = new IdGenerator();
     let cList = startlist(start, new List(), id);
-    let nList = new List();
-    
+
     test.split("").forEach((character) => {
-
-        step(cList, character, nList, id);
-        let t = cList;
-        cList = nList;
-        nList = t;
-
+        cList = step(cList, character, id);
     });
 
     return cList.isMatch();
@@ -78,18 +72,20 @@ function startlist(s: State, l: List, id: IdGenerator)
     return l;
 }
 
-function step(clist: List, character :string, nlist: List, id: IdGenerator)
+function step(clist: List, character :string, id: IdGenerator) : List
 {
+    var nList = new List();
     id.increment();
-    nlist.clear();
     clist.s.forEach((state) => {
 
         if(state.type === StateType.Matcher && state.matcherFn(character))
         {
             state.out.forEach((outstate) => {
-                addstate(nlist, outstate, id);
+                addstate(nList, outstate, id);
             });
         }
 
     });
+
+    return nList;
 }
