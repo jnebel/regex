@@ -16,6 +16,7 @@ class IdGenerator
 class List
 {
     public s : State[];
+    public idGen: IdGenerator;
 
     constructor()
     {
@@ -33,12 +34,36 @@ class List
     {
         this.s = [];
     }
+
+    public addState(s: State, id: IdGenerator) : void
+    {
+        if(s === null || s.lastlist == id.get())
+        {
+            return;
+        }
+        s.lastlist = id.get();
+        if(s.type === StateType.Split)
+        {
+            s.out.forEach((outState) => {
+                this.addState(outState, id);
+            });
+        }
+        this.s.push(s);
+    }
+
+    public static Start(startState: State, id: IdGenerator) : List
+    {
+        id.increment();
+        var list = new List();
+        list.addState(startState, id);
+        return list;
+    }
 }
 
 export function match(start: State, test: string): boolean
 {
     var id = new IdGenerator();
-    let cList = startlist(start, new List(), id);
+    let cList = List.Start(start, id);
 
     test.split("").forEach((character) => {
         cList = step(cList, character, id);
@@ -47,30 +72,6 @@ export function match(start: State, test: string): boolean
     return cList.isMatch();
 }
 
-function addstate(l: List, s: State, id: IdGenerator)
-{
-    if(s === null || s.lastlist === id.get())
-    {
-        return;
-    }
-    s.lastlist = id.get();
-    if(s.type === StateType.Split)
-    {
-        s.out.forEach((outState) => {
-            addstate(l, outState, id);
-        });
-        return;
-    }
-    l.s.push(s);
-}
-
-function startlist(s: State, l: List, id: IdGenerator)
-{
-    id.increment();
-    l.clear();
-    addstate(l, s, id);
-    return l;
-}
 
 function step(clist: List, character :string, id: IdGenerator) : List
 {
@@ -81,7 +82,7 @@ function step(clist: List, character :string, id: IdGenerator) : List
         if(state.type === StateType.Matcher && state.matcherFn(character))
         {
             state.out.forEach((outstate) => {
-                addstate(nList, outstate, id);
+                nList.addState(outstate, id);
             });
         }
 
