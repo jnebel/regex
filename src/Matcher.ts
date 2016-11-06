@@ -13,7 +13,7 @@ class IdGenerator
     }
 }
 
-class List
+class Executor
 {
     public s : State[];
     public idGen: IdGenerator;
@@ -51,18 +51,18 @@ class List
         this.s.push(s);
     }
 
-    public static Start(startState: State, id: IdGenerator) : List
+    public static Start(startState: State, id: IdGenerator) : Executor
     {
         id.increment();
-        var list = new List();
+        var list = new Executor();
         list.addState(startState, id);
         return list;
     }
 
    
-    public step(character :string, id: IdGenerator) : List
+    public step(character :string, id: IdGenerator) : Executor
     {
-        var nList = new List();
+        var nList = new Executor();
         id.increment();
         this.s.forEach((state) => {
 
@@ -81,11 +81,11 @@ class List
 export function match(start: State, test: string): boolean
 {
     var id = new IdGenerator();
-    let cList = List.Start(start, id);
+    let executor = Executor.Start(start, id);
 
     test.split("").forEach((character) => {
-        cList = cList.step(character, id);
+        executor = executor.step(character, id);
     });
 
-    return cList.isMatch();
+    return executor.isMatch();
 }
