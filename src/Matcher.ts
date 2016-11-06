@@ -58,6 +58,24 @@ class List
         list.addState(startState, id);
         return list;
     }
+
+   
+    public step(character :string, id: IdGenerator) : List
+    {
+        var nList = new List();
+        id.increment();
+        this.s.forEach((state) => {
+
+            if(state.type === StateType.Matcher && state.matcherFn(character))
+            {
+                state.out.forEach((outstate) => {
+                    nList.addState(outstate, id);
+                });
+            }
+
+        });
+        return nList;
+    }
 }
 
 export function match(start: State, test: string): boolean
@@ -66,27 +84,8 @@ export function match(start: State, test: string): boolean
     let cList = List.Start(start, id);
 
     test.split("").forEach((character) => {
-        cList = step(cList, character, id);
+        cList = cList.step(character, id);
     });
 
     return cList.isMatch();
-}
-
-
-function step(clist: List, character :string, id: IdGenerator) : List
-{
-    var nList = new List();
-    id.increment();
-    clist.s.forEach((state) => {
-
-        if(state.type === StateType.Matcher && state.matcherFn(character))
-        {
-            state.out.forEach((outstate) => {
-                nList.addState(outstate, id);
-            });
-        }
-
-    });
-
-    return nList;
 }
