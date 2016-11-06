@@ -15,71 +15,75 @@ class IdGenerator
 
 class Executor
 {
-    public s : State[];
-    public idGen: IdGenerator;
+    private steps : State[][];
+    private currentStep: number; 
+    private id: IdGenerator;
 
-    constructor()
+    public static Start(startState: State) : Executor
     {
-     this.s = [];
+        var list = new Executor();
+        list.addToStep(startState, 0);
+        return list;
     }
 
-    public isMatch() : boolean
+    private constructor()
     {
-        return this.s.some((state) => {
+     this.steps = [];
+     this.currentStep = 0;
+     this.id = new IdGenerator();
+    }
+
+    public currentStepContainsFinal() : boolean
+    {
+        return this.safeGetStep(this.currentStep).some((state) => {
             return state.type === StateType.Final;
         });
     }
 
-    private addState(s: State, id: IdGenerator) : void
+    public generateNextStep(character: string) : void
     {
-        if(s === null || s.lastlist == id.get())
-        {
-            return;
-        }
-        s.lastlist = id.get();
-        if(s.type === StateType.Split)
-        {
-            s.out.forEach((outState) => {
-                this.addState(outState, id);
-            });
-        }
-        this.s.push(s);
-    }
-
-    public static Start(startState: State, id: IdGenerator) : Executor
-    {
-        var list = new Executor();
-        list.addState(startState, id);
-        return list;
-    }
-
-   
-    public step(character :string, id: IdGenerator) : Executor
-    {
-        var nList = new Executor();
-        id.increment();
-        this.s.forEach((state) => {
-
+        this.id.increment();
+        this.steps[this.currentStep].forEach((state) => {
             if(state.type === StateType.Matcher && state.matcherFn(character))
             {
                 state.out.forEach((outstate) => {
-                    nList.addState(outstate, id);
+                    this.addToStep(outstate, this.currentStep+1);
                 });
             }
-
         });
-        return nList;
+        this.currentStep++;
+    }
+
+    private safeGetStep(step: number) : State[]
+    {
+        if(typeof this.steps[step] === "undefined") this.steps[step] = [];
+        return this.steps[step];
+    }
+
+    private addToStep(s: State, step: number) : void
+    {
+        if(s === null || s.lastlist == this.id.get())
+        {
+            return;
+        }
+        s.lastlist = this.id.get();
+        if(s.type === StateType.Split)
+        {
+            s.out.forEach((outState) => {
+                this.addToStep(outState, step);
+            });
+        }
+        this.safeGetStep(step).push(s);
     }
 }
 
 export function match(start: State, test: string): boolean
 {
-    var id = new IdGenerator();
-    let executor = Executor.Start(start, id);
+    let executor = Executor.Start(start);
 
     test.split("").forEach((character) => {
-        executor = executor.step(character, id);
+        executor.generateNextStep(character);
     });
 
-    return executor.isMatch();
+    return executor.currentStepContainsFinal();
 }
