@@ -33,6 +33,7 @@ function testObjectMatches(testObject)
     return testObject;
 }
 
+console.time("tests");
 var results = tests.map(testObjectMatches);
 tests.forEach((testCase: any) => {
 
@@ -41,3 +42,4 @@ tests.forEach((testCase: any) => {
 
     console.assert(passed, failString);
 });
+console.timeEnd("tests");
